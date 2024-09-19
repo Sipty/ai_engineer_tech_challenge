@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
@@ -11,18 +12,26 @@ const ChatBox = () => {
   };
 
   useEffect(scrollToBottom, [messages]);
-
-  const handleSendMessage = (e) => {
+ 
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() !== '') {
       setMessages([...messages, { text: inputMessage, isUser: true }]);
       setInputMessage('');
       setIsLoading(true);
-      // Simulate a response (TODO: replace with API call)
-      setTimeout(() => {
-        setMessages(prev => [...prev, { text: "This is a simulated response.", isUser: false }]);
+  
+      try {
+        // Adjust the base URL to match your API's location
+        const response = await axios.get(`http://localhost:8000/api/chat/${encodeURIComponent(inputMessage)}`);
+        
+        // The API returns a string directly, so we can use it as is
+        setMessages(prev => [...prev, { text: response.data, isUser: false }]);
+      } catch (error) {
+        console.error('Error fetching response:', error);
+        setMessages(prev => [...prev, { text: "Sorry, there was an error getting the response.", isUser: false }]);
+      } finally {
         setIsLoading(false);
-      }, 1500);
+      }
     }
   };
 
