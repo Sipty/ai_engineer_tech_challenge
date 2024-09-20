@@ -6,6 +6,7 @@ import uuid
 from pydantic import BaseModel
 import asyncio
 from asyncio import Task
+import os
 
 app = FastAPI()
 
@@ -29,10 +30,22 @@ pending_requests = {}
 rabbitmq_connection = None
 rabbitmq_channel = None
 
-async def get_rabbitmq_channel():
+def __rabbitmq_url():
+    host = os.getenv('RABBITMQ_HOST')
+    port = os.getenv('RABBITMQ_PORT')
+    user = os.getenv('RABBITMQ_USER')
+    password = os.getenv('RABBITMQ_PASSWORD')
+    
+    if not all([host, port, user, password]):
+        raise ValueError("RabbitMQ connection details are not properly set in environment variables.")
+    
+    return f"amqp://{user}:{password}@{host}:{port}/"
+
+async def __get_rabbitmq_channel():
     global rabbitmq_connection, rabbitmq_channel
     if rabbitmq_connection is None or rabbitmq_connection.is_closed:
-        rabbitmq_connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
+        rabbitmq_url = __rabbitmq_url()
+        rabbitmq_connection = await aio_pika.connect_robust(rabbitmq_url)
         rabbitmq_channel = await rabbitmq_connection.channel()
         await rabbitmq_channel.declare_queue('chat_requests')
         await rabbitmq_channel.declare_queue('chat_responses')
@@ -43,7 +56,7 @@ async def publish_message(message: str, token: str):
     Publish message to the RabbitMQ queue.
     """
     try:
-        channel = await get_rabbitmq_channel()
+        channel = await __get_rabbitmq_channel()
         await channel.default_exchange.publish(
             aio_pika.Message(
                 body=message.encode(),
@@ -54,12 +67,11 @@ async def publish_message(message: str, token: str):
         print(f"Published message with token: {token}")
     except Exception as e:
         print(f"Error publishing message: {e}")
-        # Handle the error appropriately
 
 async def consume_responses():
     while True:
         try:
-            channel = await get_rabbitmq_channel()
+            channel = await __get_rabbitmq_channel()
             queue = await channel.declare_queue('chat_responses')
             async with queue.iterator() as queue_iter:
                 async for message in queue_iter:
