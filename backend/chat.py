@@ -9,8 +9,8 @@ class Chat:
         self.squad_dataset = load_dataset("squad", split="train")
 
         # Initialize the PromptNode with GPT-Neo-1.3B
-        prompt_node = PromptNode(model_name_or_path="EleutherAI/gpt-neo-1.3B",
-                                max_length=512,
+        prompt_node = PromptNode(model_name_or_path="EleutherAI/gpt-neo-125M",
+                                max_length=256,
                                 use_gpu=False)
         
         # Create a simple pipeline
@@ -44,15 +44,16 @@ class Chat:
         return "\n\n".join(formatted_examples)
 
     def __trim_incomplete_sentences(self, s):
-        # punctuation = set('.!')
-        # for i in range(len(s)):
-        #     if s[i] in punctuation:
-        #         return s[:i+1]
+        punctuation = set('.!')
+        for i in range(len(s)):
+            if s[i] in punctuation:
+                return s[:i+1]
         return s
 
-    async def message(self, input):           
+    def message(self, input):
+        print("Message %s received. Preparing response response...", input)           
         # Get and format relevant examples from the dataset
-        examples = self.__produce_relevant_examples(input)
+        examples = ""#self.__produce_relevant_examples(input)
         
         # Create a new PromptTemplate for each query
         prompt_template = PromptTemplate(prompt=f"""
@@ -77,3 +78,10 @@ class Chat:
         response = self.__trim_incomplete_sentences(result["results"][0])
         print("Chatbot:", response)
         return response
+
+
+# Initialize Chat once and hold it in memory
+chat = Chat()
+
+def get_chat_response(input):
+    return chat.message(input)

@@ -12,20 +12,29 @@ const ChatBox = () => {
   };
 
   useEffect(scrollToBottom, [messages]);
- 
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() !== '') {
-      setMessages([...messages, { text: inputMessage, isUser: true }]);
+      setMessages(prev => [...prev, { text: inputMessage, isUser: true }]);
       setInputMessage('');
       setIsLoading(true);
-  
+
       try {
-        // Adjust the base URL to match your API's location
-        const response = await axios.get(`http://localhost:8000/api/chat/${encodeURIComponent(inputMessage)}`);
-        
-        // The API returns a string directly, so we can use it as is
-        setMessages(prev => [...prev, { text: response.data, isUser: false }]);
+        // Send message and get token
+        const userMessage = await axios.post('http://localhost:8000/api/chat',
+          { 'message': inputMessage });
+        const responseToken = userMessage.data.token;
+
+        // Poll for response
+        let response;
+        do {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between polls
+          response = await axios.get(`http://localhost:8000/api/chat/${responseToken}`);
+        } while (response.data.status === 'processing');
+
+        // Add bot response to messages
+        setMessages(prev => [...prev, { text: response.data.response, isUser: false }]);
       } catch (error) {
         console.error('Error fetching response:', error);
         setMessages(prev => [...prev, { text: "Sorry, there was an error getting the response.", isUser: false }]);
@@ -53,8 +62,7 @@ const ChatBox = () => {
           {isLoading && (
             <div className="flex justify-start mb-4">
               <div className="bg-gray-700 rounded-lg p-2">
-                <img src="loading.gif" alt="Loading..." className="w-6 h-6" />
-              </div>
+                <img src="/loading.gif" alt="Loading..." className="h-6 w-6" />              </div>
             </div>
           )}
           <div ref={messagesEndRef} />
