@@ -1,6 +1,11 @@
 import React from 'react';
 import { Rocket } from 'lucide-react';
 
+/**
+ * Banner component - The app's flag waves proudly :)  
+ * 
+ * @return {JSX.Element} The rendered Banner component
+ */
 const Banner = () => {
   return (
     <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-4 flex items-center h-16 shadow-lg">

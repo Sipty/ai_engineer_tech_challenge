@@ -1,3 +1,16 @@
+"""
+This module implements a worker for processing chat messages using RabbitMQ.
+
+The queue is populated through the API and is meant to represent a hint towards a 
+production ready implementation of the challenge. 
+
+Until I hit limitations with the free version of localstack (T_T), I had plans to
+host the individual containers into ECS and allow them to scale accordingly.
+
+In a real scenario, one would except for the chat container to be the bottleneck. Having it
+cotnainerised, allows for a truly horizontaly scalable solution.
+"""
+
 import os
 import asyncio
 from aio_pika import connect_robust, Message
@@ -6,7 +19,16 @@ from aio_pika import connect_robust, Message
 rabbitmq_connection = None
 rabbitmq_channel = None
 
-def __rabbitmq_url():
+def __rabbitmq_url() -> str:
+    """
+    Constructs the RabbitMQ URL from environment variables.
+
+    Returns:
+        str: The constructed RabbitMQ URL.
+
+    Raises:
+        ValueError: If any of the required environment variables are not set.
+    """
     host = os.getenv('RABBITMQ_HOST')
     port = os.getenv('RABBITMQ_PORT')
     user = os.getenv('RABBITMQ_USER')
@@ -18,6 +40,12 @@ def __rabbitmq_url():
     return f"amqp://{user}:{password}@{host}:{port}/"
 
 async def __get_rabbitmq_channel():
+    """
+    Gets or creates a RabbitMQ channel.
+
+    Returns:
+        aio_pika.Channel: The RabbitMQ channel.
+    """
     global rabbitmq_connection, rabbitmq_channel
     if rabbitmq_connection is None or rabbitmq_connection.is_closed:
         rabbitmq_connection = await connect_robust(__rabbitmq_url())
@@ -27,6 +55,12 @@ async def __get_rabbitmq_channel():
     return rabbitmq_channel
 
 async def process_message(message):
+    """
+    Processes a received message and publishes a response.
+
+    Args:
+        message (aio_pika.IncomingMessage): The incoming message to process.
+    """
     async with message.process():
         body = message.body.decode()
         print(f"Received message: {body[:50]}...")
@@ -45,6 +79,9 @@ async def process_message(message):
         print(f"Published response: {response[:50]}...")
 
 async def consume_messages():
+    """
+    Continuously consumes messages from the chat_requests queue and processes them.
+    """
     while True:
         try:
             channel = await __get_rabbitmq_channel()
@@ -57,6 +94,9 @@ async def consume_messages():
             await asyncio.sleep(5)  # Wait before retrying
 
 async def main():
+    """
+    The main function that sets up and runs the message consumer.
+    """
     consume_task = asyncio.create_task(consume_messages())
     
     try:

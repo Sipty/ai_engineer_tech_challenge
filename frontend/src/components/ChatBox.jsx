@@ -1,18 +1,42 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
+/**
+ * The heart and soul of the frotnend. 
+ * 
+ * 
+ * @return {JSX.Element} The rendered ChatBox component
+ */
 const ChatBox = () => {
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  // State variables
+  const [messages, setMessages] = useState([]); // Stores chat messages
+  const [inputMessage, setInputMessage] = useState(''); // Stores current user input
+  const [isLoading, setIsLoading] = useState(false); // Indicates if waiting for a response
+  const messagesEndRef = useRef(null); // Reference for auto-scrolling
 
+  /**
+   * Scrolls the chat window to the bottom.
+   */
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Effect to scroll to bottom when messages change
   useEffect(scrollToBottom, [messages]);
 
+  /**
+   * Handles sending a new message.
+   * 
+   * Regarding the hardcoded IP address - I struggled with CORS issues/ IP resolution
+   * for the past three days. I'm not proud of this shortcut, but I had to draw the
+   * line somewhere. 
+   * 
+   * I do intend on bringing this project forward with a few extra features, which I will 
+   * discuss at length in the readme, but this part called for special attention, as its
+   * a representation of my shame to solve the IP resolution issue T_T.
+   * 
+   * @param {Event} e - The form submit event
+   */
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() !== '') {
@@ -62,7 +86,8 @@ const ChatBox = () => {
           {isLoading && (
             <div className="flex justify-start mb-4">
               <div className="bg-gray-700 rounded-lg p-2">
-                <img src="/loading.gif" alt="Loading..." className="h-6 w-6" />              </div>
+                <img src="/loading.gif" alt="Loading..." className="h-6 w-6" />
+              </div>
             </div>
           )}
           <div ref={messagesEndRef} />
