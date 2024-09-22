@@ -22,7 +22,7 @@ const ChatBox = () => {
 
       try {
         // Send message and get token
-        const userMessage = await axios.post('http://localhost:8000/api/chat',
+        const userMessage = await axios.post('http://172.24.44.8:8000/api/chat',
           { 'message': inputMessage });
         const responseToken = userMessage.data.token;
 
@@ -30,7 +30,7 @@ const ChatBox = () => {
         let response;
         do {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between polls
-          response = await axios.get(`http://localhost:8000/api/chat/${responseToken}`);
+          response = await axios.get(`http://172.24.44.8:8000/api/chat/${responseToken}`);
         } while (response.data.status === 'processing');
 
         // Add bot response to messages

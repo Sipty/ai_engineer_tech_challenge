@@ -11,7 +11,8 @@ import os
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
+    "http://frontend:3000",
+    "*"
 ]
 
 # Add CORS middleware
