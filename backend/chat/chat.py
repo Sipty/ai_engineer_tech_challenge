@@ -1,14 +1,30 @@
+"""
+Implements a minimal LLM backed chat system using the Haystack framework and the SQuAD dataset.
+
+Due to the limited model size, the responses are not particularly interesting. 
+
+Once the app is deployed on real infrastructure (or even just this container), the 2.5B model
+should bne used instead, as it provides significantly more interesting responses and would
+allow for more sophisticated techniques to be used, beyond the simple prompt engineering done below.
+"""
+
 from haystack.nodes import PromptNode, PromptTemplate
 from haystack.pipelines import Pipeline
 from datasets import load_dataset
 
 class Chat:
-    def __init__(self) -> None:     
-        # Load the SQuAD dataset
+    """
+    A class to handle chat interactions using a language model and the SQuAD dataset.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initializes the Chat instance with a pipeline and the SQuAD dataset.
+        """
         self.pipeline = Pipeline()
         self.squad_dataset = load_dataset("squad", split="train")
 
-        # Initialize the PromptNode with GPT-Neo-1.3B
+        # Initialize the PromptNode with GPT-Neo-125M
         prompt_node = PromptNode(model_name_or_path="EleutherAI/gpt-neo-125M",
                                 max_length=256,
                                 use_gpu=False)
@@ -17,6 +33,16 @@ class Chat:
         self.pipeline.add_node(component=prompt_node, name="PromptNode", inputs=["Query"])
 
     def __produce_relevant_examples(self, query, num_examples=1):
+        """
+        Produces relevant examples from the SQuAD dataset based on the given query.
+
+        Args:
+            query (str): The input query to find relevant examples for.
+            num_examples (int, optional): The number of examples to return. Defaults to 1.
+
+        Returns:
+            str: A formatted string containing the relevant examples.
+        """
         query_words = set(query.lower().split())
         
         def score_example(example):
@@ -44,6 +70,17 @@ class Chat:
         return "\n\n".join(formatted_examples)
 
     def __trim_incomplete_sentences(self, s):
+        """
+        Trims a string to the last complete sentence.
+
+        Used as a simple tool to stop the model from going on wild tangents.
+
+        Args:
+            s (str): The input string to trim.
+
+        Returns:
+            str: The trimmed string ending with a complete sentence.
+        """
         punctuation = set('.!')
         for i in range(len(s)):
             if s[i] in punctuation:
@@ -51,8 +88,16 @@ class Chat:
         return s
 
     def message(self, input):
+        """
+        Processes an input message and generates a response.
+
+        Args:
+            input (str): The input message to process.
+
+        Returns:
+            str: The generated response.
+        """
         print("Message %s received. Preparing response response...", input)           
-        # Get and format relevant examples from the dataset
         examples = ""#self.__produce_relevant_examples(input)
         
         # Create a new PromptTemplate for each query
@@ -84,4 +129,13 @@ class Chat:
 chat = Chat()
 
 def get_chat_response(input):
+    """
+    Gets a chat response for the given input.
+
+    Args:
+        input (str): The input message to get a response for.
+
+    Returns:
+        str: The generated chat response.
+    """
     return chat.message(input)
