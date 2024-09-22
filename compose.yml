@@ -1,19 +1,23 @@
-version: '3'
+version: '3.8'
 
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: frontend:latest
     ports:
       - "3000:3000"
     environment:
       - API_URL=http://api:8000
+    deploy:
+      replicas: 1
 
   api:
     build:
       context: ./backend/api
       dockerfile: Dockerfile
+    image: api:latest
     ports:
       - "8000:8000"
     environment:
@@ -21,20 +25,21 @@ services:
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=admin
       - RABBITMQ_PASSWORD=admin
-    depends_on:
-      - rabbitmq
+    deploy:
+      replicas: 1
 
   chat:
     build:
       context: ./backend/chat
       dockerfile: Dockerfile
+    image: chat:latest
     environment:
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=admin
       - RABBITMQ_PASSWORD=admin
-    depends_on:
-      - rabbitmq
+    deploy:
+      replicas: 1
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -44,3 +49,5 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=admin
+    deploy:
+      replicas: 1
