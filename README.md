@@ -43,6 +43,8 @@ I did have a few stretch goals in mind, in case time permitted. I was planning o
 ## Chat history
 Chat history and user accounts was another thing I wanted to do. Similar to how similar chatbots function. A stretch of this stretch would've been projects, similar to how Claude implements them. I think it would've been cool to try and retain additional context of conversations for more pizzaz.
 
+## Testing
+I decided against adding tests just for the sake of adding tests. I have a very long history of testing and I've gotten to the point of resenting the act of doing testing for the sake of it. Especially for an app like this - the mvp is already fairly complex and I've barely scratched the surface of a project like this. If this was a real project (or if this project had a follow-up) my immediate focus would be on creating a good base suite of tests - a couple of smoke tests, E2E tests to test the whole functionality, a few unit tests to confirm the API's and different integration points and draft up a plan for the UI tests. The latter I would look to do in a third deliverable, as they can get pretty complicated, pretty quickly. And as I mentioned earlier - I prefer not to rush the testing process.
 
 # Original requirements:
 Subject of this challenge is to develop and deploy a simple, but production ready replica of [Perplexity.ai](https://www.perplexity.ai/).
