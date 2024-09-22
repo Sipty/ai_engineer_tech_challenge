@@ -1,3 +1,6 @@
+# Live demo:
+https://www.loom.com/share/eec9762591c04657aeadd7e6b64feb4a?sid=ff72a2f7-3b76-4f80-93c6-36fee65c7fc9
+
 # Chavdar's awesome chatbot
 This was an incredibly fun project - thank you for the opportunity and I hope the following words will not be too rambly, while still conveying my design intentions, problems faced and lines in the sand I eventually had to draw.
 

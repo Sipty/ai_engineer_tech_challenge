@@ -98,7 +98,7 @@ class Chat:
             str: The generated response.
         """
         print("Message %s received. Preparing response response...", input)           
-        examples = ""#self.__produce_relevant_examples(input)
+        examples = self.__produce_relevant_examples(input)
         
         # Create a new PromptTemplate for each query
         prompt_template = PromptTemplate(prompt=f"""
